@@ -1,0 +1,286 @@
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { Address, VisitStatus } from '../types';
+import { dataService } from '../services/dataService';
+
+interface AddressModalProps {
+  isOpen: boolean;
+  addressToEdit: Address | null;
+  allAddresses: Address[];
+  onClose: () => void;
+  onSave: (address: Address) => void;
+  publisherName: string;
+}
+
+const AddressModal: React.FC<AddressModalProps> = ({ isOpen, addressToEdit, allAddresses, onClose, onSave, publisherName }) => {
+  const getLocalISODate = () => {
+    return new Intl.DateTimeFormat('fr-CA', {
+      timeZone: 'America/Sao_Paulo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date());
+  };
+
+  const [formData, setFormData] = useState<Partial<Address>>({
+    id: 0,
+    bairro: '',
+    rua: '',
+    numero: '',
+    complemento: '',
+    observacoes: '',
+    gpsLink: '',
+    status: VisitStatus.NEW_ADDRESS,
+    publicador: publisherName,
+    data: getLocalISODate(),
+    noLetters: false
+  });
+
+  const [isValidationAlertOpen, setIsValidationAlertOpen] = useState(false);
+
+  const normalizeDateForInput = (val: string): string => {
+    if (!val) return getLocalISODate();
+    if (val.includes('/')) {
+      const parts = val.split('/');
+      if (parts.length === 3) {
+        const [d, m, y] = parts;
+        return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      }
+    }
+    return val;
+  };
+
+  const uniqueBairros = useMemo(() => {
+    const set = new Set(allAddresses.map(a => a.bairro).filter(b => !!b));
+    return Array.from(set).sort();
+  }, [allAddresses]);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (addressToEdit) {
+        setFormData({ 
+          ...addressToEdit,
+          data: normalizeDateForInput(addressToEdit.data)
+        });
+      } else {
+        setFormData({
+          id: dataService.getNextId(allAddresses),
+          bairro: '',
+          rua: '',
+          numero: '',
+          complemento: '',
+          observacoes: '',
+          gpsLink: '',
+          status: VisitStatus.NEW_ADDRESS,
+          publicador: publisherName,
+          data: getLocalISODate(),
+          noLetters: false
+        });
+      }
+    }
+  }, [addressToEdit, isOpen, publisherName, allAddresses]);
+
+  const handleCaptureGps = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const link = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
+        setFormData(prev => ({ ...prev, gpsLink: link }));
+      }, (err) => {
+        alert("Error al capturar GPS: " + err.message);
+      });
+    }
+  };
+
+  const handleSave = () => {
+    if (!formData.bairro?.trim() || !formData.status || !formData.publicador?.trim() || !formData.data) {
+      setIsValidationAlertOpen(true);
+      return;
+    }
+    onSave(formData as Address);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 backdrop-blur-sm">
+        <div className="bg-[#c4b5fd] w-full max-w-lg rounded-2xl shadow-2xl max-h-[95vh] overflow-y-auto p-4 sm:p-6 text-purple-900 font-bold border-2 border-purple-400">
+          <h2 className="text-xl sm:text-2xl mb-4 text-center border-b-2 border-purple-400 pb-1">
+            {addressToEdit ? 'Editar Dirección' : 'Nueva Dirección'}
+          </h2>
+          
+          <div className="space-y-2 sm:space-y-3">
+            <div className="bg-purple-100 p-2 rounded-xl flex justify-between items-center border border-purple-300">
+              <label className="text-xs opacity-60">ID ASIGNADO</label>
+              <span className="text-lg font-black">{formData.id}</span>
+            </div>
+
+            <div>
+              <label className="block text-[10px] mb-0.5 uppercase opacity-70">Barrio:*</label>
+              <div className="relative">
+                <input 
+                  list="neighborhood-suggestions"
+                  type="text" 
+                  value={formData.bairro} 
+                  onChange={e => setFormData({...formData, bairro: e.target.value})} 
+                  className="w-full bg-white p-2 sm:p-3 rounded-xl border border-purple-400 shadow-inner pr-10"
+                  placeholder="Ej: Centro"
+                  autoComplete="off"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-purple-900">▼</div>
+                <datalist id="neighborhood-suggestions">
+                  {uniqueBairros.map(b => <option key={b} value={b} />)}
+                </datalist>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] mb-0.5 uppercase opacity-70">Calle:</label>
+              <input 
+                type="text" 
+                value={formData.rua} 
+                onChange={e => setFormData({...formData, rua: e.target.value})} 
+                className="w-full bg-white p-2 sm:p-3 rounded-xl border border-purple-400 shadow-inner"
+                placeholder="Nombre de la calle"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <div className="w-1/3">
+                <label className="block text-[10px] mb-0.5 uppercase opacity-70">Número:</label>
+                <input 
+                  type="text" 
+                  value={formData.numero} 
+                  onChange={e => setFormData({...formData, numero: e.target.value})} 
+                  className="w-full bg-white p-2 sm:p-3 rounded-xl border border-purple-400 shadow-inner"
+                />
+              </div>
+              <div className="w-2/3">
+                <label className="block text-[10px] mb-0.5 uppercase opacity-70">Complemento:</label>
+                <input 
+                  type="text" 
+                  value={formData.complemento} 
+                  onChange={e => setFormData({...formData, complemento: e.target.value})} 
+                  className="w-full bg-white p-2 sm:p-3 rounded-xl border border-purple-400 shadow-inner"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] mb-0.5 uppercase opacity-70">Observaciones:</label>
+              <textarea 
+                rows={1}
+                value={formData.observacoes} 
+                onChange={e => setFormData({...formData, observacoes: e.target.value})} 
+                className="w-full bg-white p-2 sm:p-3 rounded-xl border border-purple-400 shadow-inner"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] mb-0.5 uppercase opacity-70">Enlace del GPS:</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={formData.gpsLink} 
+                  onChange={e => setFormData({...formData, gpsLink: e.target.value})} 
+                  className="w-full bg-white p-2 sm:p-3 rounded-xl border border-purple-400 shadow-inner flex-1 text-xs font-bold"
+                />
+                <button 
+                  onClick={handleCaptureGps}
+                  className="bg-purple-900 text-white w-10 sm:w-12 h-10 sm:h-12 rounded-xl flex items-center justify-center shadow-md active:scale-95 transition"
+                  title="Capturar GPS"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] mb-0.5 uppercase opacity-70">Status:</label>
+              <div className="relative">
+                <select 
+                  value={formData.status} 
+                  onChange={e => setFormData({...formData, status: e.target.value as VisitStatus})}
+                  className="w-full bg-white p-2 sm:p-3 rounded-xl border border-purple-400 shadow-inner appearance-none pr-10"
+                >
+                  {Object.values(VisitStatus).map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-purple-900">▼</div>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <div className="w-1/2">
+                <label className="block text-[10px] mb-0.5 uppercase opacity-70">Publicador:</label>
+                <input 
+                  type="text" 
+                  value={formData.publicador} 
+                  onChange={e => setFormData({...formData, publicador: e.target.value})} 
+                  className="w-full bg-white p-2 rounded-xl border border-purple-400 shadow-inner text-xs"
+                />
+              </div>
+              <div className="w-1/2">
+                <label className="block text-[10px] mb-0.5 uppercase opacity-70">Fecha:</label>
+                <input 
+                  type="date" 
+                  value={formData.data} 
+                  onChange={e => setFormData({...formData, data: e.target.value})} 
+                  className="w-full bg-white p-2 rounded-xl border border-purple-400 shadow-inner text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 bg-purple-200/50 p-2 sm:p-3 rounded-xl border border-purple-300">
+              <input 
+                type="checkbox" 
+                checked={formData.noLetters} 
+                onChange={e => setFormData({...formData, noLetters: e.target.checked})}
+                id="noLetters"
+                className="w-5 h-5 rounded"
+              />
+              <label htmlFor="noLetters" className="text-[10px] sm:text-xs font-black leading-tight">No dejar Cartas y Publicaciones</label>
+            </div>
+          </div>
+
+          <div className="mt-4 sm:mt-6 flex gap-3">
+            <button 
+              onClick={handleSave}
+              className="flex-1 bg-purple-900 text-white py-3 sm:py-4 rounded-xl font-bold shadow-lg hover:bg-purple-800 active:scale-95 transition"
+            >
+              Salvar
+            </button>
+            <button 
+              onClick={onClose}
+              className="flex-1 bg-white border-2 border-purple-900 text-purple-900 py-3 sm:py-4 rounded-xl font-bold"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {isValidationAlertOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-[#c4b5fd] p-6 rounded-2xl shadow-2xl max-w-sm w-full mx-4 border-2 border-purple-400">
+            <p className="text-purple-900 font-bold text-lg mb-6 text-center">
+              Por favor, complete los campos obligatorios: Barrio, Status, Publicador y Fecha.
+            </p>
+            <button 
+              onClick={() => setIsValidationAlertOpen(false)} 
+              className="w-full bg-purple-900 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default AddressModal;

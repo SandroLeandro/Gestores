@@ -1,0 +1,7 @@
+{
+  "name": "Gestor de Direcciones y Teléfonos",
+  "description": "Uma aplicação para controle de visitas a endereços, com gestão de bairros, usuários e mapas y también para controle de números de teléfonos",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
