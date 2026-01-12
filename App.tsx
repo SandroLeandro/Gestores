@@ -86,18 +86,18 @@ const App: React.FC = () => {
 
   // LOGIN / SETUP SCREENS
   if (isSettingUp) return (
-    <div className="min-h-screen bg-purple-100 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md font-bold">
-        <h1 className="text-2xl font-bold text-purple-900 mb-6 text-center">Configuración Inicial</h1>
-        <div className="space-y-4">
-          <input placeholder="Nombre" className="w-full border p-3 rounded" value={setupForm.name} onChange={e => setSetupForm({...setupForm, name: e.target.value})} />
-          <input type="password" placeholder="Contraseña" className="w-full border p-3 rounded" value={setupForm.password} onChange={e => setSetupForm({...setupForm, password: e.target.value})} />
-          <input type="password" placeholder="Confirmar Contraseña" className="w-full border p-3 rounded" value={setupForm.confirmPassword} onChange={e => setSetupForm({...setupForm, confirmPassword: e.target.value})} />
-          <button onClick={() => alert("Función deshabilitada temporalmente por migración")} className="w-full bg-purple-900 text-white font-bold py-3 rounded">Crear Administrador</button>
-        </div>
-      </div>
-    </div>
-  );
+    <div className="min-h-screen bg-purple-100 flex items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md font-bold">
+        <h1 className="text-2xl font-bold text-purple-900 mb-6 text-center">Configuración Inicial</h1>
+        <div className="space-y-4">
+          <input placeholder="Nombre" className="w-full border p-3 rounded" value={setupForm.name} onChange={e => setSetupForm({...setupForm, name: e.target.value})} />
+          <input type="password" placeholder="Contraseña" className="w-full border p-3 rounded" value={setupForm.password} onChange={e => setSetupForm({...setupForm, password: e.target.value})} />
+          <input type="password" placeholder="Confirmar Contraseña" className="w-full border p-3 rounded" value={setupForm.confirmPassword} onChange={e => setSetupForm({...setupForm, confirmPassword: e.target.value})} />
+          <button onClick={handleSetup} className="w-full bg-purple-900 text-white font-bold py-3 rounded active:scale-95 transition shadow-lg">Crear Administrador</button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (!currentUser) return (
     <div className="min-h-screen bg-purple-100 flex items-center justify-center p-4 font-bold">
