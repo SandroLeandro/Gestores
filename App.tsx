@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, Address, NeighborhoodMap, UserRole, VisitStatus, Phone, PhoneStatus } from './types';
-import { streamAddresses, streamPhones, saveAddress, savePhone, db } from './src/services/services/Firebase'; 
-import { collection, onSnapshot } from 'firebase/firestore';
+import { streamAddresses, streamPhones, saveAddress, savePhone, db } from './src/services/Firebase';import { collection, onSnapshot } from 'firebase/firestore';
 import AddressCard from './components/AddressCard';
 import AddressModal from './components/AddressModal';
 import PhoneCard from './components/PhoneCard';
