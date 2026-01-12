@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, Address, NeighborhoodMap, UserRole, VisitStatus, Phone, PhoneStatus } from './types';
 import { streamAddresses, streamPhones, saveAddress, savePhone, db } from './src/services/services/Firebase'; 
-
-// Se o código acima não funcionar, tente este (que é o caminho real que vimos no seu dir):
-// import { streamAddresses, streamPhones, saveAddress, savePhone, db } from './src/services/Firebase';
-
 import { collection, onSnapshot } from 'firebase/firestore';
 import AddressCard from './components/AddressCard';
 import AddressModal from './components/AddressModal';
