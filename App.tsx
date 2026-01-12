@@ -10,7 +10,6 @@ export default function App() {
   const [setupForm, setSetupForm] = useState({ name: '', password: '', confirmPassword: '' });
 
   useEffect(() => {
-    // Monitora se o usuário está logado
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       checkUsers();
@@ -20,7 +19,6 @@ export default function App() {
       try {
         const q = query(collection(db, 'users'));
         const snapshot = await getDocs(q);
-        // Se não houver nenhum usuário no banco, ativa o modo Setup
         if (snapshot.empty) {
           setIsSettingUp(true);
         }
@@ -47,7 +45,7 @@ export default function App() {
         email: email
       });
       
-      alert("Sucesso! Administrador criado com o e-mail: admin@admin.com");
+      alert("Sucesso! Usuário mestre criado: admin@admin.com");
       setIsSettingUp(false);
       window.location.reload();
     } catch (err: any) {
@@ -57,29 +55,29 @@ export default function App() {
 
   if (loading) return (
     <div style={{ padding: '50px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-      <h2>Carregando sistema...</h2>
+      <h2>Carregando DirecTel...</h2>
     </div>
   );
 
   if (isSettingUp) return (
     <div style={{ padding: '40px', backgroundColor: '#4c1d95', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
-      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '15px', width: '100%', maxWidth: '400px' }}>
-        <h2 style={{ textAlign: 'center', color: '#4c1d95' }}>Configuração Inicial</h2>
-        <p style={{ textAlign: 'center', color: '#666', fontSize: '14px' }}>Crie seu acesso de mestre:</p>
+      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '15px', width: '100%', maxWidth: '400px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+        <h2 style={{ textAlign: 'center', color: '#4c1d95', marginTop: 0 }}>Configuração Inicial</h2>
+        <p style={{ textAlign: 'center', color: '#666' }}>Crie seu acesso de Administrador:</p>
         
-        <label style={{ display: 'block', marginBottom: '5px' }}>Seu Nome:</label>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Seu Nome:</label>
         <input style={{ width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }} 
           placeholder="Ex: Sandro" value={setupForm.name} onChange={e => setSetupForm({...setupForm, name: e.target.value})} />
         
-        <label style={{ display: 'block', marginBottom: '5px' }}>Sua Senha:</label>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Sua Senha:</label>
         <input style={{ width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }} 
           type="password" placeholder="Mínimo 6 dígitos" value={setupForm.password} onChange={e => setSetupForm({...setupForm, password: e.target.value})} />
         
-        <label style={{ display: 'block', marginBottom: '5px' }}>Confirme a Senha:</label>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Confirme a Senha:</label>
         <input style={{ width: '100%', padding: '12px', marginBottom: '20px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }} 
           type="password" placeholder="Repita a senha" value={setupForm.confirmPassword} onChange={e => setSetupForm({...setupForm, confirmPassword: e.target.value})} />
         
-        <button onClick={handleSetup} style={{ width: '100%', padding: '15px', backgroundColor: '#4c1d95', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+        <button onClick={handleSetup} style={{ width: '100%', padding: '15px', backgroundColor: '#4c1d95', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
           Criar Administrador
         </button>
       </div>
@@ -90,9 +88,9 @@ export default function App() {
     <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'sans-serif' }}>
       <h1 style={{ color: '#4c1d95' }}>¡Sistema DirecTel Online!</h1>
       <p>Bem-vindo, <strong>{user?.email}</strong>!</p>
-      <div style={{ marginTop: '20px', padding: '20px', border: '1px solid #eee', borderRadius: '10px' }}>
-        <p>O próximo passo é carregar sua lista de endereços.</p>
-        <button onClick={() => auth.signOut()} style={{ padding: '10px 20px', cursor: 'pointer', borderRadius: '5px', border: '1px solid #4c1d95', background: 'none', color: '#4c1d95' }}>Sair</button>
+      <div style={{ marginTop: '20px', padding: '20px', border: '1px solid #eee', borderRadius: '10px', display: 'inline-block' }}>
+        <p>Aguarde, estou preparando sua lista de endereços...</p>
+        <button onClick={() => auth.signOut()} style={{ padding: '10px 20px', cursor: 'pointer', borderRadius: '5px', border: '1px solid #4c1d95', background: 'white', color: '#4c1d95' }}>Sair</button>
       </div>
     </div>
   );
